@@ -8,8 +8,8 @@ import pandas as pd
 # Create empty list to store the scraped content
 data_list = []
 
-# Create a loop to extract data from the first 5 webpages
-for i in range(1, 6):
+# Create a loop to extract data from the first 10 pages
+for i in range(1, 11):
 
     # Initialize Selenium WebDriver
     driver = webdriver.Firefox()
