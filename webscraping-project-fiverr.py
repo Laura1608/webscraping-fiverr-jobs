@@ -21,7 +21,7 @@ for i in range(1, 6):
     url = 'https://www.fiverr.com/search/gigs?query=scraping&source=pagination&ref_ctx_id=b7d6afc246514ab888c6631dfb5d6c7d&search_in=everywhere&search-autocomplete-original-term=scraping&page={i}&offset=-1'
     driver.get(url)
 
-    # Before performing next action, wait one second
+    # Before performing next action, wait two seconds
     time.sleep(2)
 
     # Select body element on webpage
@@ -42,7 +42,7 @@ for i in range(1, 6):
     # Close the WebDriver session
     driver.quit()
 
-    # Loop over gigs to retrieve its details
+    # Loop over all gigs to retrieve their details
     for gigs in soup.find_all('div', class_='basic-gig-card'):
 
         # Find the title element on the page
@@ -51,16 +51,16 @@ for i in range(1, 6):
         # Set standard to 'None' for rating, and replace with score if available
         # Change datatype to float
         rating = np.NaN
-        gig_rating = gigs.find('b', class_='rating-score iLiXwIR').text
+        gig_rating = gigs.find('b', class_='rating-score iLiXwIR')
         if gig_rating:
-            rating = gig_rating.replace(',', '.')
+            rating = gig_rating.text.replace(',', '.')
             rating = float(rating)
 
         # Set standard to '0' for review counts, and replace with value if available
         review_count = '0 reviews'
-        reviews = gigs.find('span', class_='rating-count-number').text
+        reviews = gigs.find('span', class_='rating-count-number')
         if reviews:
-            review_count = reviews
+            review_count = reviews.text
 
         # Set standard to '0' for level, and replace with value if available
         # Change datatype to integer
@@ -69,11 +69,21 @@ for i in range(1, 6):
         if level_class:
             level = level_class.text
 
+        # Set standard to 'No' for the Top Rated badge, and replace with value if available
+        top_rated = 'No Top Rated badge'
+        badge = gigs.find('span', class_='ucgAJ7j')
+        if badge:
+            top_rated_badge = badge.find('div', class_='tbody-6 text-semi-bold claXVc8 DK7KkjD')
+            if top_rated_badge:
+                top_rated = top_rated_badge.text
+
         # Set standard to 'No' for the Pro badge, and replace with value if available
-        pro_badge = 'No Pro badge'
-        pro = gigs.find('span', class_='ucgAJ7j')
-        if pro:
-            pro_badge = "Pro badge"
+        pro = 'No Pro badge'
+        badge = gigs.find('span', class_='ucgAJ7j')
+        if badge:
+            pro_badge = badge.find('div', class_='g1R5_pQ')
+            if pro_badge:
+                pro = pro_badge.p.text
 
         # Set standard to 'No' for video consultation, and replace with value if available
         video_cons = 'No video consultation'
@@ -85,7 +95,7 @@ for i in range(1, 6):
         language = 'No extra languages'
         seller_language = gigs.find('div', class_='seller-language')
         if seller_language:
-            language = seller_language.span
+            language = seller_language.span.text
 
         # Find the price element on the page
         # Change datatype to integer
@@ -98,12 +108,14 @@ for i in range(1, 6):
         url = "https://nl.fiverr.com/" + url
 
         # Add all variables to a new list
-        data_list.append([title, rating, review_count, level, pro_badge, video_cons, language, price, url])
+        data_list.append([title, rating, review_count, level, top_rated, pro, video_cons, language, price, url])
 
 
 # Create a dataframe with columns and print the first rows
-column_names = ['title', 'rating', 'review_count', 'level', 'pro_badge', 'video_cons', 'language', 'price', 'url']
+column_names = ['title', 'rating', 'review_count', 'level', 'top_rated', 'pro_badge', 'video_cons', 'language', 'price', 'url']
 df = pd.DataFrame(data_list, columns=column_names)
 
 # Drop duplicated rows, based on url
 df = df.drop_duplicates(subset='url')
+
+df.to_csv('webscraping-fiverr-output.csv', sep=';', index=False)
