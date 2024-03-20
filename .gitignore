@@ -1,0 +1,8 @@
+.idea/
+venv/
+Lib/
+Scripts/
+results-graphs-img/
+webscraping-project-fiverr-single-p.py
+webscraping-fiverr-output - Copy.csv
+pyvenv.cfg
